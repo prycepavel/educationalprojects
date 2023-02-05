@@ -15,8 +15,8 @@ inputRub.addEventListener('input', () => {
   // Свойства объекта (status, statusText, response, readyState)
   
   // События объекта
-  request.addEventListener('readystatechange', () => { // Событие отслеживает готовность запроса в текущий момент
-    if (request.readyState === 4 && request.status === 200) { // Какой статус готовности (4 операция полностью завершена), (200 запрос успешно завершился)
+  request.addEventListener('load', () => { // Событие отслеживает готовность запроса в текущий момент
+    if (request.status === 200) { // Какой статус готовности (200 запрос успешно завершился)
       console.log(request.response);
       const data = JSON.parse(request.response); // внутри JSON объект current из файла current.json
       inputUsd.value = (+inputRub.value / data.current.usd).toFixed(2);  // Рассчитываем курс валют на основании того, что ввел пользователь и, что пришло от сервера результат записываем в inputUsd.value. Метод toFixed(2) показывает сколько будет знаков после точки в результате вычисления
