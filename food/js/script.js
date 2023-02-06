@@ -282,16 +282,23 @@ window.addEventListener('DOMContentLoaded', () => {
       let statusMessage = document.createElement('div'); // Создаем элемент
       statusMessage.classList.add('status'); // Добавляем класс созданному элементу div
       statusMessage.textContent = message.loading; // Добавляем сообщение пользователю в созданный элемент
-      form.append(statusMessage); // Добавляем элемент с сообщением на страницу внутрь формы
+      form.appendChild(statusMessage); // Добавляем элемент с сообщением на страницу внутрь формы
 
 
       const request = new XMLHttpRequest(); // Запрос на сервер
       request.open('POST', 'server.php');  // Настройка запроса на сервер. Первый аргумент метод POST, второй путь на который мы ссылаемся.
       
-      // request.setRequestHeader('Content-type', 'multipart/form-data');  // Заголовки которые сообщают серверу, что на него пришло. При использовании multipart/form-data заголовок прописывать не нужно.
-      const formData = new FormData(form);  // Объект формирующий данные которые заполнил пользователь. Формат/ключ/значение. В параметр помещается форма с которой собираются данные.
+      request.setRequestHeader('Content-type', 'application/json');  // Заголовки которые сообщают серверу, что на него пришло.
+      const formData = new FormData(form);  // Объект формирующий данные которые заполнил пользователь. Формат ключ/значение. В параметр помещается форма с которой собираются данные.
 
-      request.send(formData); // Отправка данных
+      const object = {};
+      formData.forEach(function (value, key) { // Преобразование объекта FormData в обычный объект методом перебора
+        object[key] = value; // Заполнение пустого объекта данными
+      });
+
+      const json = JSON.stringify(object); // Преобразование объекта в формат JSON
+
+      request.send(json); // Отправка данных
 
       request.addEventListener('load', () => { // Отслеживаем конечную загрузку запроса(load)
         if (request.status === 200) { // Проверка успешности запроса
