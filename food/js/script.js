@@ -47,7 +47,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Timer
 
-  const deadline = '2023-02-09';
+  const deadline = '2023-05-09';
 
   // Функция определяющая разницу между текущим временем и дедлайном
   function getTimeRemaining(endtime) {
@@ -260,5 +260,54 @@ window.addEventListener('DOMContentLoaded', () => {
     "menu__item"
   ).render();
 
+  //  Forms
+
+  const forms = document.querySelectorAll('form');
+
+  const message = { // Текстовое сообщение пользователю
+    loading: 'Загрузка',
+    success: 'Спасибо! Мы с вами свяжемся',
+    failure: 'Что-то пошло не так...'
+  };
+
+  forms.forEach(item => {
+    postData(item);
+  });
+
+  // Постинг данных на сервер
+  function postData(form) {
+    form.addEventListener('submit', (event) => { // e(event) событиея
+      event.preventDefault();  // Отмена стандартного поведения браузера, отправка данных формы без перезагруки страницы.
+
+      let statusMessage = document.createElement('div'); // Создаем элемент
+      statusMessage.classList.add('status'); // Добавляем класс созданному элементу div
+      statusMessage.textContent = message.loading; // Добавляем сообщение пользователю в созданный элемент
+      form.append(statusMessage); // Добавляем элемент с сообщением на страницу внутрь формы
+
+
+      const request = new XMLHttpRequest(); // Запрос на сервер
+      request.open('POST', 'server.php');  // Настройка запроса на сервер. Первый аргумент метод POST, второй путь на который мы ссылаемся.
+      
+      // request.setRequestHeader('Content-type', 'multipart/form-data');  // Заголовки которые сообщают серверу, что на него пришло. При использовании multipart/form-data заголовок прописывать не нужно.
+      const formData = new FormData(form);  // Объект формирующий данные которые заполнил пользователь. Формат/ключ/значение. В параметр помещается форма с которой собираются данные.
+
+      request.send(formData); // Отправка данных
+
+      request.addEventListener('load', () => { // Отслеживаем конечную загрузку запроса(load)
+        if (request.status === 200) { // Проверка успешности запроса
+          console.log(request.response);
+          statusMessage.textContent = message.success; // Сообщение пользователю
+          form.reset(); // Очистить форму
+          setTimeout(() => { // Удаление блока с сообщением пользователю
+            statusMessage.remove();
+          }, 2000);
+        } else {
+          statusMessage.textContent = message.failure; // Сообщение пользователю
+        }
+      });
+      
+    });
+
+  }
 });
 
