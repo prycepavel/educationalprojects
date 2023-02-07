@@ -118,8 +118,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Способ для вывода модального окна, с использованием двух разных кнопок вызова расположенных на странице
   const modalTrigger = document.querySelectorAll('[data-modal]'),  // Кнопка вызывающая модальное окно
-    modal = document.querySelector('.modal'),  // Модальное окно
-    modalCloseBtn = document.querySelector('[data-close]');  // Закрытие модального окна
+    modal = document.querySelector('.modal');  // Модальное окно
   
   // Функция открытия модального окна
   function openModal() {
@@ -151,12 +150,9 @@ window.addEventListener('DOMContentLoaded', () => {
     document.body.style.overflow = '';  // При закрытие модального окна, удаляет стили в body запрещающие скролл
   }
 
-  // Закрытие модального окна по клику на крестик или кнопку закрытия
-  modalCloseBtn.addEventListener('click', closeModal);
-
   // Закрытие модального окна кликнув по затемненному фону вокруг модального окна
   modal.addEventListener('click', (event) => {
-    if (event.target === modal) { // Если место куда кликнул пользователь event.target будет строго совпадать с модальным окном modal
+    if (event.target === modal || event.target.getAttribute('data-close') == '') { // Если место куда кликнул пользователь event.target будет строго совпадать с модальным окном modal или атрибутом вёрстки data-close
       closeModal();
     }
   });
@@ -169,7 +165,7 @@ window.addEventListener('DOMContentLoaded', () => {
   });
 
   // Открытие модального окна по таймеру
-  // const modalTimerId = setTimeout(openModal, 6000);
+  const modalTimerId = setTimeout(openModal, 60000);
 
   function showModalByScroll() {
     if (window.pageYOffset + document.documentElement.clientHeight >= document.documentElement.scrollHeight -1) { // Проверяет долистал ли пользователь до конца.
@@ -303,18 +299,45 @@ window.addEventListener('DOMContentLoaded', () => {
       request.addEventListener('load', () => { // Отслеживаем конечную загрузку запроса(load)
         if (request.status === 200) { // Проверка успешности запроса
           console.log(request.response);
-          statusMessage.textContent = message.success; // Сообщение пользователю
+          showThanksModal(message.success); // Показ окна с сообщением пользователю
           form.reset(); // Очистить форму
           setTimeout(() => { // Удаление блока с сообщением пользователю
             statusMessage.remove();
-          }, 2000);
+          });
         } else {
-          statusMessage.textContent = message.failure; // Сообщение пользователю
+          showThanksModal(message.failure); // Показ окна с сообщением пользователю
         }
       });
       
     });
+  }
+
+  // Создание модального окна с сообщением пользователю
+  function showThanksModal(message) { // Аргумент будет приходить из объекта message находящегося выше по коду
+    const prevModalDialog = document.querySelector('.modal__dialog');
+
+    prevModalDialog.classList.add('hide'); // Добавляем класс для скрытия модального окна
+    openModal(); // Открытие окна
+
+    const thanksModal = document.createElement('div'); // Создание элемента для размещения верстки модального окна на странице
+    thanksModal.classList.add('modal__dialog'); // Добавляем класс для элемента
+    // Создание верстки модального окна
+    thanksModal.innerHTML = `
+      <div class="modal__content">
+        <div class="modal__close" data-close>&times;</div>
+        <div class="modal__title">${message}</div>
+      </div>
+    `;
+
+    document.querySelector('.modal').append(thanksModal); // Добавление модального окна на страницу
+    setTimeout(() => {
+      thanksModal.remove(); // Удаление модального окна с сообщением со страницы
+      prevModalDialog.classList.add('show'); // Добавляем класс для отображения модального окна
+      prevModalDialog.classList.remove('hide'); // Удаляем класс
+      closeModal(); // Закрытие модального окна
+    }, 4000);    
 
   }
+
 });
 
