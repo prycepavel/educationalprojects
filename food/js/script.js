@@ -261,7 +261,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const forms = document.querySelectorAll('form');
 
   const message = { // Текстовое сообщение пользователю
-    loading: 'Загрузка',
+    loading: 'img/form/spinner.svg',
     success: 'Спасибо! Мы с вами свяжемся',
     failure: 'Что-то пошло не так...'
   };
@@ -275,11 +275,14 @@ window.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', (event) => { // e(event) событиея
       event.preventDefault();  // Отмена стандартного поведения браузера, отправка данных формы без перезагруки страницы.
 
-      let statusMessage = document.createElement('div'); // Создаем элемент
-      statusMessage.classList.add('status'); // Добавляем класс созданному элементу div
-      statusMessage.textContent = message.loading; // Добавляем сообщение пользователю в созданный элемент
-      form.appendChild(statusMessage); // Добавляем элемент с сообщением на страницу внутрь формы
-
+      let statusMessage = document.createElement('img'); // Создаем элемент
+      statusMessage.src = message.loading; // Присваеваем атрибуту тега img путь к изображению, находящегося в объекте.
+       // Добавляем css стили элементу img
+      statusMessage.style.cssText = `
+        display: block;
+        margin: 0 auto;
+      `;
+      form.insertAdjacentElement('afterend', statusMessage); // Первый аргумент указывает куда будет вставлен элемент на странице, второй что будем вставлять. afterend в конце формы.
 
       const request = new XMLHttpRequest(); // Запрос на сервер
       request.open('POST', 'server.php');  // Настройка запроса на сервер. Первый аргумент метод POST, второй путь на который мы ссылаемся.
