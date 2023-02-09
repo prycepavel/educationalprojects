@@ -282,12 +282,9 @@ window.addEventListener('DOMContentLoaded', () => {
         display: block;
         margin: 0 auto;
       `;
-      form.insertAdjacentElement('afterend', statusMessage); // Первый аргумент указывает куда будет вставлен элемент на странице, второй что будем вставлять. afterend в конце формы.
-
-      const request = new XMLHttpRequest(); // Запрос на сервер
-      request.open('POST', 'server.php');  // Настройка запроса на сервер. Первый аргумент метод POST, второй путь на который мы ссылаемся.
       
-      request.setRequestHeader('Content-type', 'application/json');  // Заголовки которые сообщают серверу, что на него пришло.
+      form.insertAdjacentElement('afterend', statusMessage); // Первый аргумент указывает куда будет вставлен элемент на странице, второй что будем вставлять. afterend в конце формы.
+            
       const formData = new FormData(form);  // Объект формирующий данные которые заполнил пользователь. Формат ключ/значение. В параметр помещается форма с которой собираются данные.
 
       const object = {};
@@ -295,21 +292,24 @@ window.addEventListener('DOMContentLoaded', () => {
         object[key] = value; // Заполнение пустого объекта данными
       });
 
-      const json = JSON.stringify(object); // Преобразование объекта в формат JSON
-
-      request.send(json); // Отправка данных
-
-      request.addEventListener('load', () => { // Отслеживаем конечную загрузку запроса(load)
-        if (request.status === 200) { // Проверка успешности запроса
-          console.log(request.response);
-          showThanksModal(message.success); // Показ окна с сообщением пользователю
-          form.reset(); // Очистить форму
-          setTimeout(() => { // Удаление блока с сообщением пользователю
-            statusMessage.remove();
-          });
-        } else {
-          showThanksModal(message.failure); // Показ окна с сообщением пользователю
-        }
+      fetch('server.php', { // server.php куда обращаться, обычно прописывают url 
+        method: "POST", // метод обращения постинг на сервер(POST) 
+        headers: { // Заголовок
+          'Content-type': 'application/json'
+        },
+        body: JSON.stringify(object) // Преобразование объекта который будет отправлен на сервер в формат JSON перед отправкой
+      })
+      .then(data => data.text()) // Данные возвращенные из promise, сервер возвращает promise, преобразуются в текстовый формат
+      .then(data => { // Приходят из data.text()
+        console.log(data); 
+        showThanksModal(message.success); // Показ окна с сообщением пользователю
+        statusMessage.remove(); // Удаление блока с сообщением пользователю
+      })
+      .catch(() => {
+        showThanksModal(message.failure); // Показ окна с сообщением пользователю
+      })
+      .finally(() => {
+        form.reset(); // Очистить форму
       });
       
     });
