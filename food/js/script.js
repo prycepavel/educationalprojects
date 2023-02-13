@@ -337,9 +337,57 @@ window.addEventListener('DOMContentLoaded', () => {
 
   }
 
-  fetch('http://localhost:3000/menu')
-    .then(data => data.json()) // Данные возвращенные c сервера в формате JSON преобразуются в формат JavaScript
-    .then(res => console.log(res)); // Выводим полученный из data результат в консоль
+  // Slider
+
+  const slides = document.querySelectorAll('.offer__slide'),
+    prev = document.querySelector('.offer__slider-prev'),
+    next = document.querySelector('.offer__slider-next'),
+    total = document.querySelector('#total'),
+    current = document.querySelector('#current');
+  
+  
+  let slidIndex = 1;
+
+  showSlides(slidIndex);
+
+  if (slides.length < 10) {
+    total.textContent = `0${slides.length}`;
+  } else {
+    total.textContent = slides.length;
+  }
+
+  function showSlides(n) {
+    if (n > slides.length) {
+      slidIndex = 1;
+    }
+
+    if (n < 1) {
+      slidIndex = slides.length;
+    }
+
+    slides.forEach(item => item.style.display = 'none');
+    slides[slidIndex - 1].style.display = 'block';
+
+    if (slides.length < 10) {
+      current.textContent = `0${slidIndex}`;
+    } else {
+      current.textContent = slidIndex;
+    }
+
+  }
+
+  function plusSlides(n) {
+    showSlides(slidIndex += n);
+  }
+
+  prev.addEventListener('click', () => {
+    plusSlides(-1);
+  });
+
+  next.addEventListener('click', () => {
+    plusSlides(1);
+  });
+
 
 });
 
