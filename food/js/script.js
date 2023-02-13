@@ -225,36 +225,48 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  new MenuCard( // Создаем новый объект MenuCard с аргументами и запуском метода render
-    "img/tabs/vegy.jpg", // src
-    "vegy", // alt
-    "Меню 'Фитнес'", // title
-    "Меню 'Фитнес' - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. Продукт активных и здоровых людей. Это абсолютно новый продукт с оптимальной ценой и высоким качеством!", // descr
-    9, // price 9 долларов
-    ".menu .container", // parentSelector
-    "menu__item",
-    'big'
-  ).render();
+  const getResource = async (url) => { // Постинг данных на сервер
+    const res = await fetch(url);
+    
+    if (!res.ok) {
+      throw new Error(`Could not fetch ${url}, status: ${res.status}`);
+    }
 
-  new MenuCard( // Создаем новый объект MenuCard с аргументами и запуском метода render
-    "img/tabs/elite.jpg", // src
-    "elite", // alt
-    "Меню 'Премиум'", // title
-    "В меню 'Премиум' мы используем не только красивый дизайн упаковки, но и качественное исполнение блюд. Красная рыба, морепродукты, фрукты - ресторанное меню без похода в ресторан!", // descr
-    14, // price 9 долларов
-    ".menu .container", // parentSelector
-    "menu__item"
-  ).render();
+    return await res.json();
+  };
 
-  new MenuCard( // Создаем новый объект MenuCard с аргументами и запуском метода render
-    "img/tabs/post.jpg", // src
-    "post", // alt
-    "Меню 'Постное'", // title
-    "Меню 'Постное' - это тщательный подбор ингредиентов: полное отсутствие продуктов животного происхождения, молоко из миндаля, овса, кокоса или гречки, правильное количество белков за счет тофу и импортных вегетарианских стейков.", // descr
-    21, // price 9 долларов
-    ".menu .container", // parentSelector
-    "menu__item"
-  ).render();
+  // Первый вариант реализации
+  getResource('http://localhost:3000/menu')
+    .then(data => {
+      data.forEach(({img, altimg, title, descr, price}) => {
+        new MenuCard(img, altimg, title, descr, price, '.menu .container').render();
+      });
+    });
+
+  // Второй вариант реализации для вывода один раз
+  // getResource('http://localhost:3000/menu')
+  //   .then(data => createCard(data));
+  
+  // function createCard(data) {
+  //   data.forEach(({ img, altimg, title, descr, price }) => {
+  //     let element = document.createElement('div');
+  //     price = price * 70;
+  //     element.classList.add('menu__item');
+
+  //     element.innerHTML = `
+  //     <img src=${img} alt=${altimg}>
+  //     <h3 class="menu__item-subtitle">${title}</h3>
+  //     <div class="menu__item-descr">${descr}</div>
+  //     <div class="menu__item-divider"></div>
+  //     <div class="menu__item-price">
+  //       <div class="menu__item-cost">Цена:</div>
+  //       <div class="menu__item-total"><span>${price}</span> руб/день</div>
+  //     </div>
+  //     `;
+
+  //     document.querySelector('.menu .container').append(element);
+  //   });
+  // }
 
   //  Forms
 
@@ -267,11 +279,23 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 
   forms.forEach(item => {
-    postData(item);
+    bindPostData(item);
   });
 
-  // Постинг данных на сервер
-  function postData(form) {
+  const postDate = async (url, data) => { // Постинг данных на сервер
+    const res = await fetch(url, {
+      method: "POST", // метод обращения постинг на сервер(POST) 
+      headers: { // Заголовок
+        'Content-type': 'application/json'
+      },
+      body: data
+    });
+    
+    return await res.json();
+  };
+
+  // Привязка постинга данных
+  function bindPostData(form) {
     form.addEventListener('submit', (event) => { // e(event) событиея
       event.preventDefault();  // Отмена стандартного поведения браузера, отправка данных формы без перезагруки страницы.
 
@@ -287,19 +311,9 @@ window.addEventListener('DOMContentLoaded', () => {
             
       const formData = new FormData(form);  // Объект формирующий данные которые заполнил пользователь. Формат ключ/значение. В параметр помещается форма с которой собираются данные.
 
-      const object = {};
-      formData.forEach(function (value, key) { // Преобразование объекта FormData в обычный объект методом перебора
-        object[key] = value; // Заполнение пустого объекта данными
-      });
+      const json = JSON.stringify(Object.fromEntries(formData.entries()));
 
-      fetch('server.php', { // server.php куда обращаться, обычно прописывают url 
-        method: "POST", // метод обращения постинг на сервер(POST) 
-        headers: { // Заголовок
-          'Content-type': 'application/json'
-        },
-        body: JSON.stringify(object) // Преобразование объекта который будет отправлен на сервер в формат JSON перед отправкой
-      })
-      .then(data => data.text()) // Данные возвращенные из promise, сервер возвращает promise, преобразуются в текстовый формат
+      postDate('http://localhost:3000/requests', json)
       .then(data => { // Приходят из data.text()
         console.log(data); 
         showThanksModal(message.success); // Показ окна с сообщением пользователю
@@ -341,6 +355,10 @@ window.addEventListener('DOMContentLoaded', () => {
     }, 4000);    
 
   }
+
+  fetch('http://localhost:3000/menu')
+    .then(data => data.json()) // Данные возвращенные c сервера в формате JSON преобразуются в формат JavaScript
+    .then(res => console.log(res)); // Выводим полученный из data результат в консоль
 
 });
 
